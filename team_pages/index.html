@@ -1,0 +1,1811 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>2025paben Scouting Data Index</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f5f5f5;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                flex: 1;
+            }
+            .controls {
+                margin-bottom: 20px;
+                display: flex;
+                gap: 20px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .search-box {
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                width: 200px;
+            }
+            .hide-teams {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .hide-teams input {
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                width: 150px;
+            }
+            .hide-teams button {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                background-color: #f8f9fa;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .hide-teams button:hover {
+                background-color: #e9ecef;
+            }
+            .sort-buttons {
+                display: flex;
+                gap: 10px;
+            }
+            .sort-button {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                background-color: #f8f9fa;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .sort-button:hover {
+                background-color: #e9ecef;
+            }
+            .sort-button.active {
+                background-color: #007bff;
+                color: white;
+            }
+            .info-button {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                background-color: #17a2b8;
+                color: white;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .info-button:hover {
+                background-color: #138496;
+            }
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+            }
+            .modal-content {
+                background-color: white;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 20px;
+                border-radius: 8px;
+                width: 80%;
+                max-width: 600px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            .close {
+                position: absolute;
+                right: 20px;
+                top: 10px;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .close:hover {
+                color: #666;
+            }
+            .scoring-info {
+                margin-top: 20px;
+            }
+            .scoring-info h3 {
+                color: #2c3e50;
+                margin-bottom: 10px;
+            }
+            .scoring-info p {
+                margin: 10px 0;
+                line-height: 1.5;
+            }
+            .scoring-info ul {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+            .scoring-info li {
+                margin: 5px 0;
+            }
+            .team-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 15px;
+                margin-top: 20px;
+            }
+            .team-card {
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 6px;
+                text-decoration: none;
+                color: #2c3e50;
+                transition: transform 0.2s;
+            }
+            .team-card:hover {
+                transform: translateY(-2px);
+            }
+            .team-number {
+                font-size: 1.2em;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            .team-name {
+                color: #7f8c8d;
+                font-size: 0.9em;
+                margin-bottom: 5px;
+            }
+            .team-stats {
+                font-size: 0.9em;
+                color: #666;
+            }
+            .team-rank {
+                font-weight: bold;
+                color: #2c3e50;
+                margin: 5px 0;
+                padding: 4px 8px;
+                background-color: #e9ecef;
+                border-radius: 4px;
+                display: inline-block;
+            }
+            .bracket-container {
+                margin-top: 40px;
+                padding: 20px;
+                background-color: white;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                overflow-x: auto;
+            }
+            .bracket-container h2 {
+                margin-bottom: 20px;
+                color: #2c3e50;
+                text-align: center;
+            }
+            .bracket-wrapper {
+                display: flex;
+                justify-content: space-between;
+                padding: 20px 0;
+                min-width: 1200px;
+            }
+            .bracket-round {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                margin: 0 20px;
+                position: relative;
+            }
+            .bracket-round:not(:last-child)::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: -20px;
+                width: 20px;
+                height: 100%;
+                background: repeating-linear-gradient(
+                    to right,
+                    transparent,
+                    transparent 10px,
+                    #ccc 10px,
+                    #ccc 20px
+                );
+                z-index: 1;
+            }
+            .bracket-match {
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 10px;
+                margin: 10px 0;
+                min-width: 200px;
+                position: relative;
+                z-index: 2;
+            }
+            .bracket-match.winner {
+                background-color: #e8f5e9;
+                border-color: #4caf50;
+            }
+            .bracket-match.loser {
+                background-color: #ffebee;
+                border-color: #f44336;
+            }
+            .bracket-team {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 5px;
+            }
+            .bracket-team.winner {
+                font-weight: bold;
+                color: #2e7d32;
+            }
+            .bracket-team.loser {
+                color: #c62828;
+            }
+            .bracket-score {
+                font-weight: bold;
+                margin-left: 10px;
+            }
+            .bracket-seed {
+                color: #666;
+                font-size: 0.8em;
+                margin-right: 5px;
+            }
+            .bracket-round-title {
+                text-align: center;
+                font-weight: bold;
+                color: #2c3e50;
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                font-size: 0.9em;
+            }
+            .bracket-connector {
+                position: absolute;
+                background-color: #ccc;
+                z-index: 1;
+            }
+            .bracket-connector.horizontal {
+                height: 2px;
+            }
+            .bracket-connector.vertical {
+                width: 2px;
+            }
+            .bracket-connector.winner {
+                background-color: #4caf50;
+            }
+            .bracket-connector.loser {
+                background-color: #f44336;
+            }
+            .footer {
+                text-align: center;
+                padding: 20px;
+                background-color: white;
+                border-top: 1px solid #e0e0e0;
+                margin-top: 40px;
+                font-size: 0.9em;
+                color: #666;
+                line-height: 1.5;
+                box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+            }
+            .footer a {
+                color: #007bff;
+                text-decoration: none;
+                transition: color 0.2s;
+            }
+            .footer a:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+        </style>
+        <script>
+            function filterTeams() {   
+                const searchBox = document.getElementById('teamSearch');
+                const filter = searchBox.value.toLowerCase();
+                const cards = document.getElementsByClassName('team-card');
+                
+                for (let card of cards) {
+                    const teamNumber = card.querySelector('.team-number').textContent.toLowerCase();
+                    if (teamNumber.includes(filter)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            }
+            
+            function hideTeams() {
+                const hideInput = document.getElementById('hideTeams');
+                const teamsToHide = hideInput.value.split(',').map(num => num.trim());
+                const cards = document.getElementsByClassName('team-card');
+                
+                for (let card of cards) {
+                    const teamNumber = card.querySelector('.team-number').textContent.split(' ')[1];
+                    if (teamsToHide.includes(teamNumber)) {
+                        card.style.display = 'none';
+                    }
+                }
+            }
+            
+            function showAllTeams() {
+                const hideInput = document.getElementById('hideTeams');
+                hideInput.value = '';
+                const cards = document.getElementsByClassName('team-card');
+                
+                for (let card of cards) {
+                    card.style.display = '';
+                }
+            }
+            
+            function sortTeams(criteria) {
+                const container = document.querySelector('.team-grid');
+                const cards = Array.from(container.getElementsByClassName('team-card'));
+                const buttons = document.getElementsByClassName('sort-button');
+                
+                // Update active button
+                for (let button of buttons) {
+                    button.classList.remove('active');
+                }
+                event.target.classList.add('active');
+                
+                // Sort cards
+                cards.sort((a, b) => {
+                    if (criteria === 'number') {
+                        const aNum = parseInt(a.querySelector('.team-number').textContent.split(' ')[1]);
+                        const bNum = parseInt(b.querySelector('.team-number').textContent.split(' ')[1]);
+                        return aNum - bNum;
+                    } else if (criteria === 'rank') {
+                        const aRank = parseInt(a.dataset.rank);
+                        const bRank = parseInt(b.dataset.rank);
+                        return aRank - bRank;
+                    } else {
+                        const aValue = parseFloat(a.dataset[criteria]);
+                        const bValue = parseFloat(b.dataset[criteria]);
+                        return bValue - aValue;
+                    }
+                });
+                
+                // Reorder cards
+                cards.forEach(card => container.appendChild(card));
+            }
+            
+            function showInfo() {
+                document.getElementById('infoModal').style.display = 'block';
+            }
+            
+            function hideInfo() {
+                document.getElementById('infoModal').style.display = 'none';
+            }
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('infoModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>2025paben Scouting Data</h1>
+            <div class="controls">
+                <input type="text" id="teamSearch" class="search-box" placeholder="Filter by team number..." onkeyup="filterTeams()">
+                <div class="hide-teams">
+                    <input type="text" id="hideTeams" class="search-box" placeholder="Hide teams (comma-separated)" onkeyup="hideTeams()">
+                    <button onclick="showAllTeams()">Show All</button>
+                </div>
+                <div class="sort-buttons">
+                    <button class="sort-button" onclick="sortTeams('number')">Sort by Team Number</button>
+                    <button class="sort-button" onclick="sortTeams('rank')">Sort by Rank</button>
+                    <button class="sort-button" onclick="sortTeams('coral')">Sort by Coral</button>
+                    <button class="sort-button" onclick="sortTeams('algae')">Sort by Algae</button>
+                    <button class="info-button" onclick="showInfo()">Info</button>
+                </div>
+            </div>
+            <div class="team-grid">
+    
+                <a href="team_103.html" class="team-card" data-coral="6.9" data-algae="13.1" data-rank="2">
+                    <div class="team-number">Team 103</div>
+                    <div class="team-name">Cybersonics</div>
+                    <div class="team-rank">Rank: 2</div>
+                    <div class="team-stats">
+                        Coral: 6.9 | Algae: 13.1
+                    </div>
+                </a>
+        
+                <a href="team_272.html" class="team-card" data-coral="26.7" data-algae="1.4" data-rank="6">
+                    <div class="team-number">Team 272</div>
+                    <div class="team-name">Cyber Crusaders</div>
+                    <div class="team-rank">Rank: 6</div>
+                    <div class="team-stats">
+                        Coral: 26.7 | Algae: 1.4
+                    </div>
+                </a>
+        
+                <a href="team_316.html" class="team-card" data-coral="38.1" data-algae="0.6" data-rank="10">
+                    <div class="team-number">Team 316</div>
+                    <div class="team-name">LUNATECS</div>
+                    <div class="team-rank">Rank: 10</div>
+                    <div class="team-stats">
+                        Coral: 38.1 | Algae: 0.6
+                    </div>
+                </a>
+        
+                <a href="team_321.html" class="team-card" data-coral="19.2" data-algae="0.0" data-rank="26">
+                    <div class="team-number">Team 321</div>
+                    <div class="team-name">RoboLancers</div>
+                    <div class="team-rank">Rank: 26</div>
+                    <div class="team-stats">
+                        Coral: 19.2 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_365.html" class="team-card" data-coral="38.6" data-algae="0.5" data-rank="1">
+                    <div class="team-number">Team 365</div>
+                    <div class="team-name">Miracle Workerz</div>
+                    <div class="team-rank">Rank: 1</div>
+                    <div class="team-stats">
+                        Coral: 38.6 | Algae: 0.5
+                    </div>
+                </a>
+        
+                <a href="team_427.html" class="team-card" data-coral="2.2" data-algae="0.0" data-rank="33">
+                    <div class="team-number">Team 427</div>
+                    <div class="team-name">LANCE-A-LOT</div>
+                    <div class="team-rank">Rank: 33</div>
+                    <div class="team-stats">
+                        Coral: 2.2 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_484.html" class="team-card" data-coral="31.2" data-algae="0.0" data-rank="14">
+                    <div class="team-number">Team 484</div>
+                    <div class="team-name">Roboforce</div>
+                    <div class="team-rank">Rank: 14</div>
+                    <div class="team-stats">
+                        Coral: 31.2 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_486.html" class="team-card" data-coral="2.5" data-algae="1.3" data-rank="22">
+                    <div class="team-number">Team 486</div>
+                    <div class="team-name">Positronic Panthers</div>
+                    <div class="team-rank">Rank: 22</div>
+                    <div class="team-stats">
+                        Coral: 2.5 | Algae: 1.3
+                    </div>
+                </a>
+        
+                <a href="team_708.html" class="team-card" data-coral="28.5" data-algae="0.7" data-rank="8">
+                    <div class="team-number">Team 708</div>
+                    <div class="team-name">Hatters Robotics</div>
+                    <div class="team-rank">Rank: 8</div>
+                    <div class="team-stats">
+                        Coral: 28.5 | Algae: 0.7
+                    </div>
+                </a>
+        
+                <a href="team_1089.html" class="team-card" data-coral="26.8" data-algae="0.2" data-rank="7">
+                    <div class="team-number">Team 1089</div>
+                    <div class="team-name">Team Mercury</div>
+                    <div class="team-rank">Rank: 7</div>
+                    <div class="team-stats">
+                        Coral: 26.8 | Algae: 0.2
+                    </div>
+                </a>
+        
+                <a href="team_1257.html" class="team-card" data-coral="36.7" data-algae="0.1" data-rank="3">
+                    <div class="team-number">Team 1257</div>
+                    <div class="team-name">Parallel Universe</div>
+                    <div class="team-rank">Rank: 3</div>
+                    <div class="team-stats">
+                        Coral: 36.7 | Algae: 0.1
+                    </div>
+                </a>
+        
+                <a href="team_1647.html" class="team-card" data-coral="5.1" data-algae="2.7" data-rank="21">
+                    <div class="team-number">Team 1647</div>
+                    <div class="team-name">Iron Devils</div>
+                    <div class="team-rank">Rank: 21</div>
+                    <div class="team-stats">
+                        Coral: 5.1 | Algae: 2.7
+                    </div>
+                </a>
+        
+                <a href="team_1712.html" class="team-card" data-coral="0.6" data-algae="6.9" data-rank="11">
+                    <div class="team-number">Team 1712</div>
+                    <div class="team-name">Dawgma</div>
+                    <div class="team-rank">Rank: 11</div>
+                    <div class="team-stats">
+                        Coral: 0.6 | Algae: 6.9
+                    </div>
+                </a>
+        
+                <a href="team_2016.html" class="team-card" data-coral="1.0" data-algae="9.8" data-rank="18">
+                    <div class="team-number">Team 2016</div>
+                    <div class="team-name">Mighty Monkey Wrenches</div>
+                    <div class="team-rank">Rank: 18</div>
+                    <div class="team-stats">
+                        Coral: 1.0 | Algae: 9.8
+                    </div>
+                </a>
+        
+                <a href="team_2559.html" class="team-card" data-coral="1.0" data-algae="0.6" data-rank="23">
+                    <div class="team-number">Team 2559</div>
+                    <div class="team-name">Normality Zero</div>
+                    <div class="team-rank">Rank: 23</div>
+                    <div class="team-stats">
+                        Coral: 1.0 | Algae: 0.6
+                    </div>
+                </a>
+        
+                <a href="team_2720.html" class="team-card" data-coral="14.1" data-algae="0.0" data-rank="16">
+                    <div class="team-number">Team 2720</div>
+                    <div class="team-name">Red Watch Robotics</div>
+                    <div class="team-rank">Rank: 16</div>
+                    <div class="team-stats">
+                        Coral: 14.1 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_2722.html" class="team-card" data-coral="34.5" data-algae="0.1" data-rank="15">
+                    <div class="team-number">Team 2722</div>
+                    <div class="team-name">Charge Robotics</div>
+                    <div class="team-rank">Rank: 15</div>
+                    <div class="team-stats">
+                        Coral: 34.5 | Algae: 0.1
+                    </div>
+                </a>
+        
+                <a href="team_4575.html" class="team-card" data-coral="5.2" data-algae="0.4" data-rank="25">
+                    <div class="team-number">Team 4575</div>
+                    <div class="team-name">Gemini</div>
+                    <div class="team-rank">Rank: 25</div>
+                    <div class="team-stats">
+                        Coral: 5.2 | Algae: 0.4
+                    </div>
+                </a>
+        
+                <a href="team_4652.html" class="team-card" data-coral="12.4" data-algae="0.1" data-rank="30">
+                    <div class="team-number">Team 4652</div>
+                    <div class="team-name">Ironmen 2</div>
+                    <div class="team-rank">Rank: 30</div>
+                    <div class="team-stats">
+                        Coral: 12.4 | Algae: 0.1
+                    </div>
+                </a>
+        
+                <a href="team_4653.html" class="team-card" data-coral="23.1" data-algae="0.1" data-rank="4">
+                    <div class="team-number">Team 4653</div>
+                    <div class="team-name">Ironmen Robotics</div>
+                    <div class="team-rank">Rank: 4</div>
+                    <div class="team-stats">
+                        Coral: 23.1 | Algae: 0.1
+                    </div>
+                </a>
+        
+                <a href="team_4750.html" class="team-card" data-coral="2.7" data-algae="0.0" data-rank="27">
+                    <div class="team-number">Team 4750</div>
+                    <div class="team-name">Bert</div>
+                    <div class="team-rank">Rank: 27</div>
+                    <div class="team-stats">
+                        Coral: 2.7 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_5113.html" class="team-card" data-coral="13.3" data-algae="0.0" data-rank="19">
+                    <div class="team-number">Team 5113</div>
+                    <div class="team-name">Combustible Lemons</div>
+                    <div class="team-rank">Rank: 19</div>
+                    <div class="team-stats">
+                        Coral: 13.3 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_5401.html" class="team-card" data-coral="22.5" data-algae="4.6" data-rank="9">
+                    <div class="team-number">Team 5401</div>
+                    <div class="team-name">Fightin' Robotic Owls</div>
+                    <div class="team-rank">Rank: 9</div>
+                    <div class="team-stats">
+                        Coral: 22.5 | Algae: 4.6
+                    </div>
+                </a>
+        
+                <a href="team_5490.html" class="team-card" data-coral="1.0" data-algae="0.0" data-rank="28">
+                    <div class="team-number">Team 5490</div>
+                    <div class="team-name">The Dark Byte</div>
+                    <div class="team-rank">Rank: 28</div>
+                    <div class="team-stats">
+                        Coral: 1.0 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_5666.html" class="team-card" data-coral="11.3" data-algae="0.0" data-rank="32">
+                    <div class="team-number">Team 5666</div>
+                    <div class="team-name">Purple Lightning</div>
+                    <div class="team-rank">Rank: 32</div>
+                    <div class="team-stats">
+                        Coral: 11.3 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_6226.html" class="team-card" data-coral="23.5" data-algae="0.0" data-rank="20">
+                    <div class="team-number">Team 6226</div>
+                    <div class="team-name">Blue Devils</div>
+                    <div class="team-rank">Rank: 20</div>
+                    <div class="team-stats">
+                        Coral: 23.5 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_7414.html" class="team-card" data-coral="27.5" data-algae="0.0" data-rank="13">
+                    <div class="team-number">Team 7414</div>
+                    <div class="team-name">RetroRobotics</div>
+                    <div class="team-rank">Rank: 13</div>
+                    <div class="team-stats">
+                        Coral: 27.5 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_7587.html" class="team-card" data-coral="12.5" data-algae="0.1" data-rank="17">
+                    <div class="team-number">Team 7587</div>
+                    <div class="team-name">Metuchen Momentum</div>
+                    <div class="team-rank">Rank: 17</div>
+                    <div class="team-stats">
+                        Coral: 12.5 | Algae: 0.1
+                    </div>
+                </a>
+        
+                <a href="team_8704.html" class="team-card" data-coral="1.3" data-algae="0.0" data-rank="31">
+                    <div class="team-number">Team 8704</div>
+                    <div class="team-name">Void Warranty</div>
+                    <div class="team-rank">Rank: 31</div>
+                    <div class="team-stats">
+                        Coral: 1.3 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_8721.html" class="team-card" data-coral="7.5" data-algae="0.0" data-rank="24">
+                    <div class="team-number">Team 8721</div>
+                    <div class="team-name">M.I.T.</div>
+                    <div class="team-rank">Rank: 24</div>
+                    <div class="team-stats">
+                        Coral: 7.5 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_9015.html" class="team-card" data-coral="45.1" data-algae="0.0" data-rank="12">
+                    <div class="team-number">Team 9015</div>
+                    <div class="team-name">Questionable Engineering</div>
+                    <div class="team-rank">Rank: 12</div>
+                    <div class="team-stats">
+                        Coral: 45.1 | Algae: 0.0
+                    </div>
+                </a>
+        
+                <a href="team_9094.html" class="team-card" data-coral="35.3" data-algae="1.4" data-rank="5">
+                    <div class="team-number">Team 9094</div>
+                    <div class="team-name">The Earthquakers</div>
+                    <div class="team-rank">Rank: 5</div>
+                    <div class="team-stats">
+                        Coral: 35.3 | Algae: 1.4
+                    </div>
+                </a>
+        
+                <a href="team_10143.html" class="team-card" data-coral="2.4" data-algae="0.0" data-rank="29">
+                    <div class="team-number">Team 10143</div>
+                    <div class="team-name">Northeast High School Philadelphia Robotics Team</div>
+                    <div class="team-rank">Rank: 29</div>
+                    <div class="team-stats">
+                        Coral: 2.4 | Algae: 0.0
+                    </div>
+                </a>
+        
+            </div>
+    
+            <div class="bracket-container">
+                <h2>Playoff Bracket</h2>
+                <div class="bracket-wrapper">
+                    <div id="double-elim-bracket-wrapper">
+ <table id="double-elim-bracket-table">
+  <tr class="gap-row">
+  </tr>
+  <!-- Upper Bracket -->
+  <tr>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 1
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         1
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/365">
+           365
+          </a>
+          -
+          <wbr/>
+          <a href="/team/103">
+           103
+          </a>
+          -
+          <wbr/>
+          <a href="/team/8721">
+           8721
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         8
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/484">
+           484
+          </a>
+          -
+          <wbr/>
+          <a href="/team/321">
+           321
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2016">
+           2016
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td class="" rowspan="4">
+    <div class="merger inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+   <td class="dash">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 7
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         1
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/365">
+           365
+          </a>
+          -
+          <wbr/>
+          <a href="/team/103">
+           103
+          </a>
+          -
+          <wbr/>
+          <a href="/team/8721">
+           8721
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         5
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/1089">
+           1089
+          </a>
+          -
+          <wbr/>
+          <a href="/team/5401">
+           5401
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2720">
+           2720
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="3">
+   </td>
+   <td colspan="3" rowspan="8">
+    <div class="merger inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 2
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="">
+         4
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/9094">
+           9094
+          </a>
+          -
+          <wbr/>
+          <a href="/team/708">
+           708
+          </a>
+          -
+          <wbr/>
+          <a href="/team/5113">
+           5113
+          </a>
+         </span>
+        </td>
+        <td class="redScore">
+         0
+        </td>
+       </tr>
+       <tr>
+        <td class="winner">
+         5
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/1089">
+           1089
+          </a>
+          -
+          <wbr/>
+          <a href="/team/5401">
+           5401
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2720">
+           2720
+          </a>
+         </span>
+        </td>
+        <td class="blueScore winner">
+         1
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="16">
+   </td>
+  </tr>
+  <tr>
+   <td colspan="4">
+   </td>
+   <td class="dash" colspan="2">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 11
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         1
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/365">
+           365
+          </a>
+          -
+          <wbr/>
+          <a href="/team/103">
+           103
+          </a>
+          -
+          <wbr/>
+          <a href="/team/8721">
+           8721
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         7
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/1712">
+           1712
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2722">
+           2722
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7587">
+           7587
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="9">
+   </td>
+   <td class="" colspan="3">
+    <div class="top inner">
+    </div>
+   </td>
+   <td class="" rowspan="9">
+    <div class="merger inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 3
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="">
+         2
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/1257">
+           1257
+          </a>
+          -
+          <wbr/>
+          <a href="/team/272">
+           272
+          </a>
+          -
+          <wbr/>
+          <a href="/team/1647">
+           1647
+          </a>
+         </span>
+        </td>
+        <td class="redScore">
+         0
+        </td>
+       </tr>
+       <tr>
+        <td class="winner">
+         7
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/1712">
+           1712
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2722">
+           2722
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7587">
+           7587
+          </a>
+         </span>
+        </td>
+        <td class="blueScore winner">
+         1
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="4">
+    <div class="merger inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+   <td class="dash">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 8
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         7
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/1712">
+           1712
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2722">
+           2722
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7587">
+           7587
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         3
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/4653">
+           4653
+          </a>
+          -
+          <wbr/>
+          <a href="/team/9015">
+           9015
+          </a>
+          -
+          <wbr/>
+          <a href="/team/6226">
+           6226
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="3">
+   </td>
+   <td colspan="10">
+   </td>
+   <td class="dash" colspan="1">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Finals
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         1
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/365">
+           365
+          </a>
+          -
+          <wbr/>
+          <a href="/team/103">
+           103
+          </a>
+          -
+          <wbr/>
+          <a href="/team/8721">
+           8721
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         2
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         7
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/1712">
+           1712
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2722">
+           2722
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7587">
+           7587
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 4
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         3
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/4653">
+           4653
+          </a>
+          -
+          <wbr/>
+          <a href="/team/9015">
+           9015
+          </a>
+          -
+          <wbr/>
+          <a href="/team/6226">
+           6226
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         6
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/316">
+           316
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7414">
+           7414
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2559">
+           2559
+          </a>
+          -
+          <wbr/>
+          <a href="/team/4575">
+           4575
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+  </tr>
+  <!--    Lower Bracket -->
+  <tr>
+   <td colspan="16">
+   </td>
+  </tr>
+  <tr>
+   <td colspan="11">
+   </td>
+   <td class="dash">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 13
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         7
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/1712">
+           1712
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2722">
+           2722
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7587">
+           7587
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         8
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/484">
+           484
+          </a>
+          -
+          <wbr/>
+          <a href="/team/321">
+           321
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2016">
+           2016
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="5">
+   </td>
+   <td class="dash" colspan="1">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 10
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="">
+         3
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/4653">
+           4653
+          </a>
+          -
+          <wbr/>
+          <a href="/team/9015">
+           9015
+          </a>
+          -
+          <wbr/>
+          <a href="/team/6226">
+           6226
+          </a>
+         </span>
+        </td>
+        <td class="redScore">
+         0
+        </td>
+       </tr>
+       <tr>
+        <td class="winner">
+         8
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/484">
+           484
+          </a>
+          -
+          <wbr/>
+          <a href="/team/321">
+           321
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2016">
+           2016
+          </a>
+         </span>
+        </td>
+        <td class="blueScore winner">
+         1
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+   <td colspan="3">
+   </td>
+   <td rowspan="3">
+    <div class="snake inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="4">
+   </td>
+   <td rowspan="2">
+    <div class="snake inner">
+    </div>
+   </td>
+   <td colspan="1">
+   </td>
+   <td class="" rowspan="4">
+    <div class="merger inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="3">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 5
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         8
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/484">
+           484
+          </a>
+          -
+          <wbr/>
+          <a href="/team/321">
+           321
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2016">
+           2016
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         4
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/9094">
+           9094
+          </a>
+          -
+          <wbr/>
+          <a href="/team/708">
+           708
+          </a>
+          -
+          <wbr/>
+          <a href="/team/5113">
+           5113
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+   <td colspan="3">
+   </td>
+   <td class="dash">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 12
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         8
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/484">
+           484
+          </a>
+          -
+          <wbr/>
+          <a href="/team/321">
+           321
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2016">
+           2016
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         5
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/1089">
+           1089
+          </a>
+          -
+          <wbr/>
+          <a href="/team/5401">
+           5401
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2720">
+           2720
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="1">
+   </td>
+  </tr>
+  <tr>
+   <td colspan="5">
+   </td>
+   <td class="dash" colspan="1">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 9
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="winner">
+         5
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/1089">
+           1089
+          </a>
+          -
+          <wbr/>
+          <a href="/team/5401">
+           5401
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2720">
+           2720
+          </a>
+         </span>
+        </td>
+        <td class="redScore winner">
+         1
+        </td>
+       </tr>
+       <tr>
+        <td class="">
+         6
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/316">
+           316
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7414">
+           7414
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2559">
+           2559
+          </a>
+          -
+          <wbr/>
+          <a href="/team/4575">
+           4575
+          </a>
+         </span>
+        </td>
+        <td class="blueScore">
+         0
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="4">
+   </td>
+   <td class="path" rowspan="2">
+    <div class="snake inner">
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="3">
+   </td>
+   <td class="match" rowspan="2">
+    <div class="match-table-wrapper">
+     <div style="position: relative;">
+      <span class="match-label">
+       Match 6
+      </span>
+      <table class="match-table">
+       <tr>
+        <td class="">
+         2
+        </td>
+        <td>
+         <span class="alliance-name">
+          <wbr/>
+          <a href="/team/1257">
+           1257
+          </a>
+          -
+          <wbr/>
+          <a href="/team/272">
+           272
+          </a>
+          -
+          <wbr/>
+          <a href="/team/1647">
+           1647
+          </a>
+         </span>
+        </td>
+        <td class="redScore">
+         0
+        </td>
+       </tr>
+       <tr>
+        <td class="winner">
+         6
+        </td>
+        <td>
+         <span class="alliance-name winner">
+          <wbr/>
+          <a href="/team/316">
+           316
+          </a>
+          -
+          <wbr/>
+          <a href="/team/7414">
+           7414
+          </a>
+          -
+          <wbr/>
+          <a href="/team/2559">
+           2559
+          </a>
+          -
+          <wbr/>
+          <a href="/team/4575">
+           4575
+          </a>
+         </span>
+        </td>
+        <td class="blueScore winner">
+         1
+        </td>
+       </tr>
+      </table>
+     </div>
+    </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="1">
+   </td>
+  </tr>
+  <tr class="gap-row">
+  </tr>
+ </table>
+</div>
+
+                </div>
+            </div>
+        
+        </div>
+
+        <div id="infoModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="hideInfo()">&times;</span>
+                <h2>Scoring Calculations</h2>
+                <div class="scoring-info">
+                    <h3>Coral Scoring</h3>
+                    <p>The coral score is calculated as a weighted sum of coral placements:</p>
+                    <ul>
+                        <li>Level 1: 1 point per coral</li>
+                        <li>Level 2: 2 points per coral</li>
+                        <li>Level 3: 3 points per coral</li>
+                        <li>Level 4: 4 points per coral</li>
+                    </ul>
+                    <p>Formula: 2 × (Auto L1 + Auto L2×2 + Auto L3×3 + Auto L4×4) + (Teleop L1 + Teleop L2×2 + Teleop L3×3 + Teleop L4×4)</p>
+                    
+                    <h3>Algae Scoring</h3>
+                    <p>The algae score is the sum of algae placements with different weights:</p>
+                    <ul>
+                        <li>Net Shot: 2 points per algae</li>
+                        <li>Processor: 1 point per algae</li>
+                    </ul>
+                    <p>Formula: 2 × (Auto Net Shot×2 + Auto Processor) + (Teleop Net Shot×2 + Teleop Processor)</p>
+                    
+                    <p><em>Note: All scores shown are averages per match. Autonomous period scores are doubled.</em></p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            Data collected and organized by FRC7414<br>
+            Visualization and site created and maintained by FRC272<br>
+            Data further enriched by <a href="https://www.thebluealliance.com" target="_blank">The Blue Alliance</a> and <a href="https://statbotics.io" target="_blank">Statbotics</a><br><br>
+            Contact: <a href="mailto:jake.gads@gmail.com">jake.gads@gmail.com</a>
+        </div>
+    </body>
+    </html>
+    
