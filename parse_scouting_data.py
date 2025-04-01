@@ -918,18 +918,18 @@ def create_index_page(teams, team_names):
     for team in teams:
         team_data = df[df['selectTeam'] == team]
         team_scores[team] = {
-            'coral': (team_data['autoCoralPlaceL1Count'].mean() + 
-                    team_data['autoCoralPlaceL2Count'].mean() * 2 +
-                    team_data['autoCoralPlaceL3Count'].mean() * 3 +
-                    team_data['autoCoralPlaceL4Count'].mean() * 4) * 2 +  # Double auto coral
-                    team_data['teleopCoralPlaceL1Count'].mean() + 
-                    team_data['teleopCoralPlaceL2Count'].mean() * 2 +
-                    team_data['teleopCoralPlaceL3Count'].mean() * 3 +
-                    team_data['teleopCoralPlaceL4Count'].mean() * 4,
-            'algae': (team_data['autoAlgaePlaceNetShot'].mean() * 2 +
-                    team_data['autoAlgaePlaceProcessor'].mean()) * 2 +  # Double auto algae
-                    team_data['teleopAlgaePlaceNetShot'].mean() * 2 +
-                    team_data['teleopAlgaePlaceProcessor'].mean()
+            'coral': (team_data['autoCoralPlaceL1Count'].mean() * 3+ 
+                    team_data['autoCoralPlaceL2Count'].mean() * 4 +
+                    team_data['autoCoralPlaceL3Count'].mean() * 6 +
+                    team_data['autoCoralPlaceL4Count'].mean() * 7) +  # Double auto coral
+                    team_data['teleopCoralPlaceL1Count'].mean() * 2+ 
+                    team_data['teleopCoralPlaceL2Count'].mean() * 3 +
+                    team_data['teleopCoralPlaceL3Count'].mean() * 4 +
+                    team_data['teleopCoralPlaceL4Count'].mean() * 5,
+            'algae': (team_data['autoAlgaePlaceNetShot'].mean() * 6 +
+                    team_data['autoAlgaePlaceProcessor'].mean() * 4)  +  # Double auto algae
+                    team_data['teleopAlgaePlaceNetShot'].mean() * 6 +
+                    team_data['teleopAlgaePlaceProcessor'].mean() * 4
         }
     
     html_content = f"""
@@ -1494,22 +1494,40 @@ def create_index_page(teams, team_names):
                     <h3>Coral Scoring</h3>
                     <p>The coral score is calculated as a weighted sum of coral placements:</p>
                     <ul>
-                        <li>Level 1: 1 point per coral</li>
-                        <li>Level 2: 2 points per coral</li>
-                        <li>Level 3: 3 points per coral</li>
-                        <li>Level 4: 4 points per coral</li>
+                        <li>Autonomous Period:</li>
+                        <ul>
+                            <li>Level 1: 3 points per coral</li>
+                            <li>Level 2: 4 points per coral</li>
+                            <li>Level 3: 6 points per coral</li>
+                            <li>Level 4: 7 points per coral</li>
+                        </ul>
+                        <li>Teleoperated Period:</li>
+                        <ul>
+                            <li>Level 1: 2 points per coral</li>
+                            <li>Level 2: 3 points per coral</li>
+                            <li>Level 3: 4 points per coral</li>
+                            <li>Level 4: 5 points per coral</li>
+                        </ul>
                     </ul>
-                    <p>Formula: 2 × (Auto L1 + Auto L2×2 + Auto L3×3 + Auto L4×4) + (Teleop L1 + Teleop L2×2 + Teleop L3×3 + Teleop L4×4)</p>
+                    <p>Formula: (Auto L1×3 + Auto L2×4 + Auto L3×6 + Auto L4×7) + (Teleop L1×2 + Teleop L2×3 + Teleop L3×4 + Teleop L4×5)</p>
                     
                     <h3>Algae Scoring</h3>
-                    <p>The algae score is the sum of algae placements with different weights:</p>
+                    <p>The algae score is calculated with different weights for autonomous and teleoperated periods:</p>
                     <ul>
-                        <li>Net Shot: 2 points per algae</li>
-                        <li>Processor: 1 point per algae</li>
+                        <li>Autonomous Period:</li>
+                        <ul>
+                            <li>Net Shot: 6 points per algae</li>
+                            <li>Processor: 4 points per algae</li>
+                        </ul>
+                        <li>Teleoperated Period:</li>
+                        <ul>
+                            <li>Net Shot: 6 points per algae</li>
+                            <li>Processor: 4 points per algae</li>
+                        </ul>
                     </ul>
-                    <p>Formula: 2 × (Auto Net Shot×2 + Auto Processor) + (Teleop Net Shot×2 + Teleop Processor)</p>
+                    <p>Formula: (Auto Net Shot×6 + Auto Processor×4) + (Teleop Net Shot×6 + Teleop Processor×4)</p>
                     
-                    <p><em>Note: All scores shown are averages per match. Autonomous period scores are doubled.</em></p>
+                    <p><em>Note: All scores shown are averages per match.</em></p>
                 </div>
             </div>
         </div>
