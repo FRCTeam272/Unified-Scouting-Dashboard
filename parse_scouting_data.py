@@ -205,6 +205,16 @@ def create_team_page(team_data, team_number, team_name, rankings):
     avg_coral_l4 = team_data['teleopCoralPlaceL4Count'].mean()
     avg_algae_net = team_data['teleopAlgaePlaceNetShot'].mean()
     avg_algae_processor = team_data['teleopAlgaePlaceProcessor'].mean()
+    # Calculate endgame points - only count the highest scoring action per match
+    endgame_points = team_data.apply(lambda row: 
+        max([
+            12 if row['deepClimbAttempted'] and not row['climbFailed'] else 0,  # Deep climb is worth 12 points
+            6 if row['shallowClimbAttempted'] and not row['climbFailed'] else 0,  # Shallow climb is worth 6 points
+            2 if row['parkAttempted'] else 0  # Park is worth 2 points
+        ]), 
+        axis=1
+    ).mean()
+    
     climb_success_rate = (team_data['deepClimbAttempted'].astype(bool).sum() + team_data['shallowClimbAttempted'].astype(bool).sum()) / total_matches
     park_rate = team_data['parkAttempted'].astype(bool).sum() / total_matches
     
@@ -814,6 +824,10 @@ def create_team_page(team_data, team_number, team_name, rankings):
                     <div class="stat-label">Total Matches</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-value">{endgame_points:.1f}</div>
+                    <div class="stat-label">Avg Endgame Points</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-value">{climb_success_rate:.1%}</div>
                     <div class="stat-label">Climb Success Rate</div>
                 </div>
@@ -917,6 +931,15 @@ def create_index_page(teams, team_names):
     team_scores = {}
     for team in teams:
         team_data = df[df['selectTeam'] == team]
+        # Calculate endgame points - only count the highest scoring action per match
+        endgame_points = team_data.apply(lambda row: 
+            max([
+                12 if row['deepClimbAttempted'] and not row['climbFailed'] else 0,  # Deep climb is worth 12 points
+                6 if row['shallowClimbAttempted'] and not row['climbFailed'] else 0,  # Shallow climb is worth 6 points
+                2 if row['parkAttempted'] else 0  # Park is worth 2 points
+            ]), 
+            axis=1
+        ).mean()
         team_scores[team] = {
             'coral': (team_data['autoCoralPlaceL1Count'].mean() * 3+ 
                     team_data['autoCoralPlaceL2Count'].mean() * 4 +
@@ -927,9 +950,10 @@ def create_index_page(teams, team_names):
                     team_data['teleopCoralPlaceL3Count'].mean() * 4 +
                     team_data['teleopCoralPlaceL4Count'].mean() * 5,
             'algae': (team_data['autoAlgaePlaceNetShot'].mean() * 6 +
-                    team_data['autoAlgaePlaceProcessor'].mean() * 4)  +  # Double auto algae
+                    team_data['autoAlgaePlaceProcessor'].mean() * 4) +  # Double auto algae
                     team_data['teleopAlgaePlaceNetShot'].mean() * 6 +
-                    team_data['teleopAlgaePlaceProcessor'].mean() * 4
+                    team_data['teleopAlgaePlaceProcessor'].mean() * 4,
+            'endgame': endgame_points
         }
     
     html_content = f"""
@@ -1448,6 +1472,7 @@ def create_index_page(teams, team_names):
                     <button class="sort-button" onclick="sortTeams('rank')">Sort by Rank</button>
                     <button class="sort-button" onclick="sortTeams('coral')">Sort by Coral</button>
                     <button class="sort-button" onclick="sortTeams('algae')">Sort by Algae</button>
+                    <button class="sort-button" onclick="sortTeams('endgame')">Sort by Endgame</button>
                     <button class="info-button" onclick="showInfo()">Info</button>
                 </div>
             </div>
@@ -1458,12 +1483,12 @@ def create_index_page(teams, team_names):
         team_name = team_names.get(team, f'Team {team}')
         scores = team_scores[team]
         html_content += f"""
-                <a href="team_{team}.html" class="team-card" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
+                <a href="team_{team}.html" class="team-card" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-endgame="{scores['endgame']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
                     <div class="team-number">Team {team}</div>
                     <div class="team-name">{team_name}</div>
                     <div class="team-rank">Rank: {rankings.get(team, {}).get('rank', 'N/A')}</div>
                     <div class="team-stats">
-                        Coral: {scores['coral']:.1f} | Algae: {scores['algae']:.1f}
+                        Coral: {scores['coral']:.1f} | Algae: {scores['algae']:.1f} | Endgame: {scores['endgame']:.1f}
                     </div>
                 </a>
         """
@@ -1512,7 +1537,7 @@ def create_index_page(teams, team_names):
                     <p>Formula: (Auto L1×3 + Auto L2×4 + Auto L3×6 + Auto L4×7) + (Teleop L1×2 + Teleop L2×3 + Teleop L3×4 + Teleop L4×5)</p>
                     
                     <h3>Algae Scoring</h3>
-                    <p>The algae score is calculated with different weights for autonomous and teleoperated periods:</p>
+                    <p>The algae score has the same weights for both autonomous and teleoperated periods:</p>
                     <ul>
                         <li>Autonomous Period:</li>
                         <ul>
@@ -1526,6 +1551,14 @@ def create_index_page(teams, team_names):
                         </ul>
                     </ul>
                     <p>Formula: (Auto Net Shot×6 + Auto Processor×4) + (Teleop Net Shot×6 + Teleop Processor×4)</p>
+
+                    <h3>Endgame Scoring</h3>
+                    <p>The endgame score is calculated from the final actions of the match:</p>
+                    <ul>
+                        <li>Park: 2 points</li>
+                        <li>Climb: 12 points (shallow climbs are not denoted)</li>
+                    </ul>
+                    <p>Note: A team can only score one endgame action per match.</p>
                     
                     <p><em>Note: All scores shown are averages per match.</em></p>
                 </div>
