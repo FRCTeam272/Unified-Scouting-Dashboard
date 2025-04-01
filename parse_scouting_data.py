@@ -352,6 +352,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 align-items: center;
                 gap: 20px;
                 margin-bottom: 20px;
+                flex-wrap: wrap;
             }}
             .team-header h1 {{
                 margin: 0;
@@ -432,6 +433,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 background-color: white;
                 border-radius: 6px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                overflow-x: auto;
             }}
             .schedule-table {{
                 width: 100%;
@@ -439,6 +441,8 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 margin-top: 20px;
                 font-size: 14px;
                 background-color: white;
+                overflow-x: auto;
+                display: block;
             }}
             .schedule-table th {{
                 background-color: #f8f9fa;
@@ -448,10 +452,12 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 position: sticky;
                 top: 0;
                 z-index: 1;
+                white-space: nowrap;
             }}
             .schedule-table td {{
                 padding: 8px 12px;
                 border-bottom: 1px solid #dee2e6;
+                white-space: nowrap;
             }}
             .schedule-table tr:nth-child(even) {{
                 background-color: #f8f9fa;
@@ -473,6 +479,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 margin-top: 20px;
                 font-size: 14px;
                 overflow-x: auto;
+                display: block;
             }}
             .raw-data-table th {{
                 background-color: #f8f9fa;
@@ -482,10 +489,12 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 position: sticky;
                 top: 0;
                 z-index: 1;
+                white-space: nowrap;
             }}
             .raw-data-table td {{
                 padding: 8px 12px;
                 border-bottom: 1px solid #dee2e6;
+                white-space: nowrap;
             }}
             .raw-data-table tr:nth-child(even) {{
                 background-color: #f8f9fa;
@@ -500,6 +509,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 border-radius: 6px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 display: none;
+                overflow-x: auto;
             }}
             .toggle-button {{
                 padding: 8px 16px;
@@ -510,6 +520,8 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 cursor: pointer;
                 transition: background-color 0.2s;
                 margin-top: 20px;
+                width: 100%;
+                max-width: 200px;
             }}
             .toggle-button:hover {{
                 background-color: #5a6268;
@@ -520,6 +532,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 background-color: white;
                 border-radius: 6px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                overflow-x: auto;
             }}
             .bracket-container {{
                 margin-top: 40px;
@@ -628,118 +641,6 @@ def create_team_page(team_data, team_number, team_name, rankings):
             .bracket-connector.loser {{
                 background-color: #f44336;
             }}
-            #double-elim-bracket-table {{
-                border-collapse: separate;
-                border-spacing: 0;
-                margin: 0 auto;
-            }}
-            .match-table-wrapper {{
-                background: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                margin: 5px;
-                min-width: 250px;
-            }}
-            .match-table {{
-                width: 100%;
-                border-collapse: collapse;
-            }}
-            .match-table td {{
-                padding: 8px 12px;
-                border-bottom: 1px solid #e0e0e0;
-            }}
-            .match-table tr:last-child td {{
-                border-bottom: none;
-            }}
-            .match-label {{
-                display: block;
-                font-weight: bold;
-                color: #2c3e50;
-                padding: 8px 12px;
-                background: #f8f9fa;
-                border-radius: 8px 8px 0 0;
-                border-bottom: 1px solid #e0e0e0;
-            }}
-            .alliance-name {{
-                display: flex;
-                flex-wrap: wrap;
-                gap: 4px;
-                align-items: center;
-            }}
-            .alliance-name a {{
-                color: #2c3e50;
-                text-decoration: none;
-                padding: 2px 6px;
-                border-radius: 4px;
-                transition: background-color 0.2s;
-            }}
-            .alliance-name a:hover {{
-                background-color: #f0f0f0;
-            }}
-            .winner {{
-                color: #2e7d32;
-                font-weight: bold;
-            }}
-            .winner .alliance-name {{
-                color: #2e7d32;
-            }}
-            .redScore, .blueScore {{
-                font-weight: bold;
-                text-align: right;
-                min-width: 40px;
-            }}
-            .redScore {{
-                color: #e74c3c;
-            }}
-            .blueScore {{
-                color: #3498db;
-            }}
-            .dash {{
-                background: repeating-linear-gradient(
-                    to right,
-                    transparent,
-                    transparent 10px,
-                    #ccc 10px,
-                    #ccc 20px
-                );
-                height: 2px;
-            }}
-            .merger, .snake {{
-                background: #f8f9fa;
-                border: 1px dashed #ccc;
-                border-radius: 4px;
-            }}
-            .merger.inner, .snake.inner {{
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
-                            linear-gradient(-45deg, #f8f9fa 25%, transparent 25%),
-                            linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
-                            linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
-                background-size: 20px 20px;
-                background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            }}
-            .gap-row {{
-                height: 20px;
-            }}
-            .path {{
-                background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%),
-                            linear-gradient(-45deg, #f8f9fa 25%, transparent 25%),
-                            linear-gradient(45deg, transparent 75%, #f8f9fa 75%),
-                            linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
-                background-size: 20px 20px;
-                background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            }}
-            .team-rank {{
-                font-weight: bold;
-                color: #2c3e50;
-                margin: 5px 0;
-                padding: 4px 8px;
-                background-color: #e9ecef;
-                border-radius: 4px;
-                display: inline-block;
-            }}
             .footer {{
                 text-align: center;
                 padding: 20px;
@@ -759,6 +660,80 @@ def create_team_page(team_data, team_number, team_name, rankings):
             .footer a:hover {{
                 color: #0056b3;
                 text-decoration: underline;
+            }}
+
+            /* Mobile Responsive Styles */
+            @media screen and (max-width: 768px) {{
+                body {{
+                    margin: 10px;
+                }}
+                .container {{
+                    padding: 15px;
+                }}
+                .team-header {{
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 10px;
+                }}
+                .tba-link, .statbotics-link {{
+                    margin-left: 0;
+                    width: 100%;
+                    text-align: center;
+                }}
+                .stats-grid {{
+                    grid-template-columns: 1fr;
+                }}
+                .graph-container {{
+                    padding: 10px;
+                }}
+                .schedule-table, .raw-data-table {{
+                    font-size: 12px;
+                }}
+                .schedule-table th, .schedule-table td,
+                .raw-data-table th, .raw-data-table td {{
+                    padding: 6px 8px;
+                }}
+                .bracket-wrapper {{
+                    min-width: 800px;
+                }}
+                .bracket-match {{
+                    min-width: 150px;
+                }}
+                .bracket-round {{
+                    margin: 0 10px;
+                }}
+                .bracket-round:not(:last-child)::after {{
+                    right: -10px;
+                    width: 10px;
+                }}
+                .footer {{
+                    padding: 15px;
+                    font-size: 0.8em;
+                }}
+            }}
+
+            @media screen and (max-width: 480px) {{
+                .team-header h1 {{
+                    font-size: 1.5em;
+                }}
+                .team-name {{
+                    font-size: 1em;
+                }}
+                .stat-value {{
+                    font-size: 20px;
+                }}
+                .stat-label {{
+                    font-size: 0.9em;
+                }}
+                .bracket-wrapper {{
+                    min-width: 600px;
+                }}
+                .bracket-match {{
+                    min-width: 120px;
+                }}
+                .bracket-team {{
+                    font-size: 0.9em;
+                }}
             }}
         </style>
         <script>
@@ -1264,6 +1239,111 @@ def create_index_page(teams, team_names):
             .footer a:hover {{
                 color: #0056b3;
                 text-decoration: underline;
+            }}
+
+            /* Mobile Responsive Styles */
+            @media screen and (max-width: 768px) {{
+                body {{
+                    margin: 10px;
+                }}
+                .container {{
+                    padding: 15px;
+                }}
+                .controls {{
+                    flex-direction: column;
+                    gap: 15px;
+                }}
+                .search-box {{
+                    width: 100%;
+                }}
+                .hide-teams {{
+                    width: 100%;
+                }}
+                .hide-teams input {{
+                    width: calc(100% - 100px);
+                }}
+                .sort-buttons {{
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 8px;
+                }}
+                .sort-button, .info-button {{
+                    flex: 1;
+                    min-width: 150px;
+                }}
+                .team-grid {{
+                    grid-template-columns: 1fr;
+                }}
+                .team-card {{
+                    padding: 12px;
+                }}
+                .team-number {{
+                    font-size: 1.1em;
+                }}
+                .team-name {{
+                    font-size: 0.85em;
+                }}
+                .team-stats {{
+                    font-size: 0.85em;
+                }}
+                .bracket-wrapper {{
+                    min-width: 800px;
+                }}
+                .bracket-match {{
+                    min-width: 150px;
+                }}
+                .bracket-round {{
+                    margin: 0 10px;
+                }}
+                .bracket-round:not(:last-child)::after {{
+                    right: -10px;
+                    width: 10px;
+                }}
+                .modal-content {{
+                    width: 95%;
+                    padding: 15px;
+                }}
+                .scoring-info {{
+                    font-size: 0.9em;
+                }}
+                .footer {{
+                    padding: 15px;
+                    font-size: 0.8em;
+                }}
+            }}
+
+            @media screen and (max-width: 480px) {{
+                .team-number {{
+                    font-size: 1em;
+                }}
+                .team-name {{
+                    font-size: 0.8em;
+                }}
+                .team-stats {{
+                    font-size: 0.8em;
+                }}
+                .bracket-wrapper {{
+                    min-width: 600px;
+                }}
+                .bracket-match {{
+                    min-width: 120px;
+                }}
+                .bracket-team {{
+                    font-size: 0.9em;
+                }}
+                .sort-button, .info-button {{
+                    min-width: 120px;
+                    font-size: 0.9em;
+                }}
+                .modal-content {{
+                    padding: 10px;
+                }}
+                .scoring-info {{
+                    font-size: 0.85em;
+                }}
+                .scoring-info ul {{
+                    padding-left: 15px;
+                }}
             }}
         </style>
         <script>
