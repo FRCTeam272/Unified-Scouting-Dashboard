@@ -188,6 +188,15 @@ def get_event_rankings(event_code: str, api_key: str) -> Dict[int, dict]:
             print(f"Response content: {response.text}")
     return rankings
 
+def save_graph(fig, filename):
+    """Save a plotly figure to an HTML file."""
+    # Create graphs directory if it doesn't exist
+    graphs_dir = Path('team_pages/graphs')
+    graphs_dir.mkdir(exist_ok=True)
+    
+    # Save the plot
+    fig.write_html(graphs_dir / filename)
+
 def create_team_page(team_data, team_number, team_name, rankings):
     """Create an HTML page for a specific team with their statistics and visualizations."""
     
@@ -319,9 +328,9 @@ def create_team_page(team_data, team_number, team_name, rankings):
         height=400
     )
     
-    # Save the plots
-    teleop_plot_html = teleop_fig.to_html(full_html=False)
-    auto_plot_html = auto_fig.to_html(full_html=False)
+    # Save the plots to separate files
+    save_graph(teleop_fig, f'team_{team_number}_teleop.html')
+    save_graph(auto_fig, f'team_{team_number}_auto.html')
     
     # remove the scouter scouterInitials column
     team_data = team_data.drop(columns=['scouterInitials'])
@@ -839,12 +848,12 @@ def create_team_page(team_data, team_number, team_name, rankings):
 
             <div class="graph-container">
                 <h2>Teleoperated Period</h2>
-                {teleop_plot_html}
+                <iframe src="graphs/team_{team_number}_teleop.html" style="width: 100%; height: 400px; border: none;"></iframe>
             </div>
 
             <div class="graph-container">
                 <h2>Autonomous Period</h2>
-                {auto_plot_html}
+                <iframe src="graphs/team_{team_number}_auto.html" style="width: 100%; height: 400px; border: none;"></iframe>
             </div>
 
             <div class="schedule-container">
@@ -1606,8 +1615,9 @@ def main():
     
     print(f"Generated pages for {len(teams)} teams in the 'team_pages' directory.")
     print("Open 'team_pages/index.html' to view the results.")
-    # Open the index file in the default web browser
-    webbrowser.open('file://' + os.path.abspath('team_pages/index.html'))
+    
 
 if __name__ == "__main__":
-    main() 
+    main()
+    # Open the index file in the default web browser
+    webbrowser.open('file://' + os.path.abspath('team_pages/index.html'))
