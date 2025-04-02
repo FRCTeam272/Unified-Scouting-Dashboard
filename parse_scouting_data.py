@@ -192,13 +192,18 @@ def save_graph(fig, filename):
     """Save a plotly figure to an HTML file."""
     # Create graphs directory if it doesn't exist
     graphs_dir = Path('team_pages/graphs')
-    graphs_dir.mkdir(exist_ok=True)
+    graphs_dir.mkdir(parents=True, exist_ok=True)
     
-    # Save the plot
-    fig.write_html(graphs_dir / filename)
+    # Save the plot using forward slashes
+    output_path = f"{graphs_dir}//{filename}"
+    fig.write_html(str(output_path))
 
 def create_team_page(team_data, team_number, team_name, rankings):
     """Create an HTML page for a specific team with their statistics and visualizations."""
+    
+    # Get current timestamp
+    from datetime import datetime
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     
     # Get team ranking
     team_rank = rankings.get(team_number, {})
@@ -680,6 +685,28 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 color: #0056b3;
                 text-decoration: underline;
             }}
+            .match-numbers {{
+                background-color: #f8f9fa;
+                padding: 10px;
+                border-radius: 4px;
+                margin-bottom: 20px;
+                font-size: 0.9em;
+                color: #666;
+            }}
+            .match-numbers strong {{
+                color: #2c3e50;
+            }}
+            .timestamp {{
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 0.8em;
+                z-index: 1000;
+            }}
 
             /* Mobile Responsive Styles */
             @media screen and (max-width: 768px) {{
@@ -827,6 +854,10 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 <a href="https://statbotics.io/team/{team_number}/2025" target="_blank" class="statbotics-link">View on Statbotics</a>
             </div>
             
+            <div class="match-numbers">
+                <strong>Matches Scouted:</strong> {', '.join(sorted(team_data['matchNumber'].astype(str)))}
+            </div>
+            
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-value">{total_matches}</div>
@@ -927,6 +958,10 @@ def get_playoff_bracket(event_code: str, api_key: str) -> dict:
 
 def create_index_page(teams, team_names):
     """Create an index page listing all teams."""
+    # Get current timestamp
+    from datetime import datetime
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     # Get playoff bracket data
     bracket_data = get_playoff_bracket(CURRENT_EVENT_CODE, TBA_API_KEY)
     
@@ -1273,6 +1308,17 @@ def create_index_page(teams, team_names):
                 color: #0056b3;
                 text-decoration: underline;
             }}
+            .timestamp {{
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 0.8em;
+                z-index: 1000;
+            }}
 
             /* Mobile Responsive Styles */
             @media screen and (max-width: 768px) {{
@@ -1468,6 +1514,7 @@ def create_index_page(teams, team_names):
         </script>
     </head>
     <body>
+        <div class="timestamp">Last updated: {current_time}</div>
         <div class="container">
             <h1>{CURRENT_EVENT_CODE} Scouting Data</h1>
             <div class="controls">
