@@ -1734,5 +1734,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # Calculate and print total repo size
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk('.'):
+        for i in ['env', '.git']:
+            if i in dirnames:
+                dirnames.remove(i)  # Skip the env directory
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+            print(f"File: {fp}, Size: {os.path.getsize(fp) / (1024*1024):.2f} MB")
+    print(f"\nTotal repository size: {total_size / (1024*1024):.2f} MB")
+    print(f"Max size is 1GB, percent used: {total_size / (1024*1024*1024):.2%}")
     # Open the index file in the default web browser
     # webbrowser.open('file://' + os.path.abspath('team_pages/index.html'))
