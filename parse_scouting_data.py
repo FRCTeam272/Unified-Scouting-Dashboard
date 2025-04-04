@@ -232,6 +232,9 @@ def create_team_page(team_data, team_number, team_name, rankings):
     climb_success_rate = (team_data['deepClimbAttempted'].astype(bool).sum() + team_data['shallowClimbAttempted'].astype(bool).sum()) / total_matches
     park_rate = team_data['parkAttempted'].astype(bool).sum() / total_matches
     
+    # Calculate broke down percentage
+    broke_down_percentage = team_data['brokeDown'].astype(bool).sum() / total_matches * 100
+    
     # Calculate autonomous statistics
     auto_coral_l1 = team_data['autoCoralPlaceL1Count'].mean()
     auto_coral_l2 = team_data['autoCoralPlaceL2Count'].mean()
@@ -908,6 +911,10 @@ def create_team_page(team_data, team_number, team_name, rankings):
                     <div class="stat-value">{park_rate:.1%}</div>
                     <div class="stat-label">Park Rate</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value">{broke_down_percentage:.1f}%</div>
+                    <div class="stat-label">Broke Down Rate</div>
+                </div>
             </div>
 
             <div class="graph-container">
@@ -1054,7 +1061,8 @@ def create_index_page(teams, team_names):
                     team_data['autoAlgaePlaceProcessor'].mean() * 2) +  # Double auto algae
                     team_data['teleopAlgaePlaceNetShot'].mean() * 4 +
                     team_data['teleopAlgaePlaceProcessor'].mean() * 2,
-            'endgame': endgame_points
+            'endgame': endgame_points,
+            'broke_down': team_data['brokeDown'].astype(bool).sum() / len(team_data) * 100
         }
     
     html_content = f"""
@@ -1205,38 +1213,84 @@ def create_index_page(teams, team_names):
                 margin-top: 20px;
             }}
             .team-card {{
-                background-color: #f8f9fa;
-                padding: 15px;
-                border-radius: 6px;
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 10px;
                 text-decoration: none;
                 color: #2c3e50;
-                transition: transform 0.2s;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border: 1px solid #e0e0e0;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                overflow: hidden;
             }}
             .team-card:hover {{
-                transform: translateY(-2px);
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+                border-color: #3498db;
+            }}
+            .team-card::before {{
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 5px;
+                height: 100%;
+                background-color: #3498db;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }}
+            .team-card:hover::before {{
+                opacity: 1;
             }}
             .team-number {{
-                font-size: 1.2em;
+                font-size: 1.4em;
                 font-weight: bold;
                 margin-bottom: 5px;
+                color: #1a237e;
+                display: flex;
+                align-items: center;
             }}
             .team-name {{
                 color: #7f8c8d;
-                font-size: 0.9em;
-                margin-bottom: 5px;
-            }}
-            .team-stats {{
-                font-size: 0.9em;
-                color: #666;
+                font-size: 1em;
+                margin-bottom: 10px;
+                font-style: italic;
             }}
             .team-rank {{
                 font-weight: bold;
                 color: #2c3e50;
-                margin: 5px 0;
-                padding: 4px 8px;
-                background-color: #e9ecef;
-                border-radius: 4px;
+                margin: 5px 0 15px 0;
+                padding: 5px 10px;
+                background-color: #f0f2f5;
+                border-radius: 20px;
                 display: inline-block;
+                font-size: 0.9em;
+            }}
+            .team-stats {{
+                font-size: 0.9em;
+                color: #555;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: auto;
+                padding-top: 10px;
+                border-top: 1px solid #eee;
+            }}
+            .team-stat {{
+                display: flex;
+                flex-direction: column;
+            }}
+            .team-stat-label {{
+                font-size: 0.8em;
+                color: #7f8c8d;
+                margin-bottom: 2px;
+            }}
+            .team-stat-value {{
+                font-weight: bold;
+                color: #2c3e50;
             }}
             .bracket-container {{
                 margin-top: 40px;
@@ -1586,6 +1640,7 @@ def create_index_page(teams, team_names):
                     <button class="sort-button" onclick="sortTeams('coral')">Sort by Coral</button>
                     <button class="sort-button" onclick="sortTeams('algae')">Sort by Algae</button>
                     <button class="sort-button" onclick="sortTeams('endgame')">Sort by Endgame</button>
+                    <button class="sort-button" onclick="sortTeams('broke_down')">Sort by Breakdown Rate</button>
                     <button class="info-button" onclick="showInfo()">Info</button>
                 </div>
             </div>
@@ -1596,12 +1651,27 @@ def create_index_page(teams, team_names):
         team_name = team_names.get(team, f'Team {team}')
         scores = team_scores[team]
         html_content += f"""
-                <a href="team_{team}.html" class="team-card" target="_blank" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-endgame="{scores['endgame']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
+                <a href="team_{team}.html" class="team-card" target="_blank" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-endgame="{scores['endgame']:.1f}" data-broke-down="{scores['broke_down']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
                     <div class="team-number">Team {team}</div>
                     <div class="team-name">{team_name}</div>
                     <div class="team-rank">Rank: {rankings.get(team, {}).get('rank', 'N/A')}</div>
                     <div class="team-stats">
-                        Algae: {scores['algae']:.1f} | Coral: {scores['coral']:.1f} | Endgame: {scores['endgame']:.1f}
+                        <div class="team-stat">
+                            <div class="team-stat-label">Algae</div>
+                            <div class="team-stat-value">{scores['algae']:.1f}</div>
+                        </div>
+                        <div class="team-stat">
+                            <div class="team-stat-label">Coral</div>
+                            <div class="team-stat-value">{scores['coral']:.1f}</div>
+                        </div>
+                        <div class="team-stat">
+                            <div class="team-stat-label">Endgame</div>
+                            <div class="team-stat-value">{scores['endgame']:.1f}</div>
+                        </div>
+                        <div class="team-stat">
+                            <div class="team-stat-label">Broke Down</div>
+                            <div class="team-stat-value">{scores['broke_down']:.1f}%</div>
+                        </div>
                     </div>
                 </a>
         """
