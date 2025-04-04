@@ -200,7 +200,7 @@ def save_graph(fig, filename):
 
 def create_team_page(team_data, team_number, team_name, rankings):
     """Create an HTML page for a specific team with their statistics and visualizations."""
-    
+    print(team_name)
     # Get current timestamp
     from datetime import datetime
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
