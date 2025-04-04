@@ -4,8 +4,8 @@
 TBA_API_KEY = "07tRTM0dcdQIzRCO5AnyGnKQRrzeJxwOMlsKx8HTpBlNABoQYSsI4U9HjregeNWL"
 # District key for your region (e.g., '2024ne' for New England)
 DISTRICT_KEY = "2025fma"  # Replace with your district key
-CURRENT_EVENT_CODE = "2025paben" # "2025mrcmp"
-CURRENT_EVENT_NAME = "2025 PABEN"  # Display name for the event
+CURRENT_EVENT_CODE = "2025mrcmp"
+CURRENT_EVENT_NAME = "Lehigh"  # Display name for the event
 
 
 try :
@@ -279,6 +279,9 @@ def create_team_page(team_data, team_number, team_name, rankings):
             result = "W" if match['winning_alliance'] == alliance_color.lower() else "L"
             result_class = "win" if result == "W" else "loss"
             
+            # Hide result if score is -1 to -1
+            result_html = f'<td class="{result_class}">{result}</td>' if score != "-1 - -1" else '<td></td>'
+            
             # Create team links
             partner_links = [f'<a href="team_{partner}.html">{partner}</a>' for partner in alliance_partners]
             opponent_links = [f'<a href="team_{opponent}.html">{opponent}</a>' for opponent in opponents]
@@ -290,7 +293,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                     <td>{', '.join(partner_links)}</td>
                     <td>{', '.join(opponent_links)}</td>
                     <td>{score}</td>
-                    <td class="{result_class}">{result}</td>
+                    {result_html}
                 </tr>
             """
         
@@ -993,10 +996,10 @@ def create_index_page(teams, team_names):
                     team_data['teleopCoralPlaceL2Count'].mean() * 3 +
                     team_data['teleopCoralPlaceL3Count'].mean() * 4 +
                     team_data['teleopCoralPlaceL4Count'].mean() * 5,
-            'algae': (team_data['autoAlgaePlaceNetShot'].mean() * 6 +
-                    team_data['autoAlgaePlaceProcessor'].mean() * 4) +  # Double auto algae
-                    team_data['teleopAlgaePlaceNetShot'].mean() * 6 +
-                    team_data['teleopAlgaePlaceProcessor'].mean() * 4,
+            'algae': (team_data['autoAlgaePlaceNetShot'].mean() * 4 +
+                    team_data['autoAlgaePlaceProcessor'].mean() * 2) +  # Double auto algae
+                    team_data['teleopAlgaePlaceNetShot'].mean() * 4 +
+                    team_data['teleopAlgaePlaceProcessor'].mean() * 2,
             'endgame': endgame_points
         }
     
@@ -1004,7 +1007,7 @@ def create_index_page(teams, team_names):
     <!DOCTYPE html>
     <html>
     <head>
-        <title>{CURRENT_EVENT_CODE} Scouting Data Index</title>
+        <title>{CURRENT_EVENT_NAME} Scouting Data Index</title>
         <style>
             body {{
                 font-family: Arial, sans-serif;
@@ -1516,7 +1519,7 @@ def create_index_page(teams, team_names):
     <body>
         <div class="timestamp">Last updated: {current_time}</div>
         <div class="container">
-            <h1>{CURRENT_EVENT_CODE} Scouting Data</h1>
+            <h1>{CURRENT_EVENT_NAME} Scouting Data</h1>
             <div class="controls">
                 <input type="text" id="teamSearch" class="search-box" placeholder="Filter by team number..." onkeyup="filterTeams()">
                 <div class="hide-teams">
@@ -1539,12 +1542,12 @@ def create_index_page(teams, team_names):
         team_name = team_names.get(team, f'Team {team}')
         scores = team_scores[team]
         html_content += f"""
-                <a href="team_{team}.html" class="team-card" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-endgame="{scores['endgame']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
+                <a href="team_{team}.html" class="team-card" target="_blank" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-endgame="{scores['endgame']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
                     <div class="team-number">Team {team}</div>
                     <div class="team-name">{team_name}</div>
                     <div class="team-rank">Rank: {rankings.get(team, {}).get('rank', 'N/A')}</div>
                     <div class="team-stats">
-                        Coral: {scores['coral']:.1f} | Algae: {scores['algae']:.1f} | Endgame: {scores['endgame']:.1f}
+                        Algae: {scores['algae']:.1f} | Coral: {scores['coral']:.1f} | Endgame: {scores['endgame']:.1f}
                     </div>
                 </a>
         """
@@ -1597,22 +1600,23 @@ def create_index_page(teams, team_names):
                     <ul>
                         <li>Autonomous Period:</li>
                         <ul>
-                            <li>Net Shot: 6 points per algae</li>
-                            <li>Processor: 4 points per algae</li>
+                            <li>Net Shot: 4 points per algae</li>
+                            <li>Processor: 2 points per algae</li>
                         </ul>
                         <li>Teleoperated Period:</li>
                         <ul>
-                            <li>Net Shot: 6 points per algae</li>
-                            <li>Processor: 4 points per algae</li>
+                            <li>Net Shot: 4 points per algae</li>
+                            <li>Processor: 2 points per algae</li>
                         </ul>
                     </ul>
-                    <p>Formula: (Auto Net Shot×6 + Auto Processor×4) + (Teleop Net Shot×6 + Teleop Processor×4)</p>
+                    <p>Formula: (Auto Net Shot×4 + Auto Processor×2) + (Teleop Net Shot×4 + Teleop Processor×2)</p>
 
                     <h3>Endgame Scoring</h3>
                     <p>The endgame score is calculated from the final actions of the match:</p>
                     <ul>
                         <li>Park: 2 points</li>
-                        <li>Climb: 12 points (shallow climbs are not denoted)</li>
+                        <li>Shallow Climb: 6 points</li>
+                        <li>Deep Climb: 12 points (shallow climbs are not denoted)</li>
                     </ul>
                     <p>Note: A team can only score one endgame action per match.</p>
                     
@@ -1667,4 +1671,4 @@ def main():
 if __name__ == "__main__":
     main()
     # Open the index file in the default web browser
-    webbrowser.open('file://' + os.path.abspath('team_pages/index.html'))
+    # webbrowser.open('file://' + os.path.abspath('team_pages/index.html'))
