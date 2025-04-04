@@ -279,7 +279,8 @@ def create_team_page(team_data, team_number, team_name, rankings):
             result = "W" if match['winning_alliance'] == alliance_color.lower() else "L"
             result_class = "win" if result == "W" else "loss"
             
-            # Hide result if score is -1 to -1
+            # Hide result and score if score is -1 to -1
+            score_html = f'<td>{score}</td>' if score != "-1 - -1" else '<td></td>'
             result_html = f'<td class="{result_class}">{result}</td>' if score != "-1 - -1" else '<td></td>'
             
             # Create team links
@@ -292,7 +293,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
                     <td>{alliance_color}</td>
                     <td>{', '.join(partner_links)}</td>
                     <td>{', '.join(opponent_links)}</td>
-                    <td>{score}</td>
+                    {score_html}
                     {result_html}
                 </tr>
             """
@@ -358,21 +359,125 @@ def create_team_page(team_data, team_number, team_name, rankings):
         <style>
             body {{
                 font-family: Arial, sans-serif;
-                margin: 20px;
-                background-color: #f5f5f5;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-            }}
-            .container {{
-                max-width: 1200px;
-                margin: 0 auto;
-                background-color: white;
+                margin: 0;
                 padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                flex: 1;
-                margin-bottom: 60px;
+                background-color: #f0f2f5;
+            }}
+            .header {{
+                background-color: #1a237e;
+                color: white;
+                padding: 20px;
+                text-align: center;
+                border-radius: 6px;
+                margin-bottom: 20px;
+            }}
+            .stats-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 20px;
+            }}
+            .stat-card {{
+                background-color: white;
+                padding: 15px;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }}
+            .stat-card h3 {{
+                margin: 0 0 10px 0;
+                color: #1a237e;
+            }}
+            .stat-card p {{
+                margin: 0;
+                font-size: 1.2em;
+                font-weight: bold;
+            }}
+            .graph-container {{
+                background-color: white;
+                padding: 15px;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }}
+            .graph-container h2 {{
+                margin-top: 0;
+                color: #1a237e;
+            }}
+            .schedule-container {{
+                background-color: white;
+                padding: 15px;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }}
+            .schedule-container h2 {{
+                margin-top: 0;
+                color: #1a237e;
+            }}
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }}
+            th, td {{
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }}
+            th {{
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }}
+            tr:hover {{
+                background-color: #f5f5f5;
+            }}
+            .match-numbers {{
+                background-color: #f8f9fa;
+                padding: 10px 15px;
+                border-radius: 4px;
+                margin: 10px 0;
+                font-size: 0.9em;
+            }}
+            .match-numbers strong {{
+                color: #1a237e;
+            }}
+            .timestamp {{
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 0.8em;
+                z-index: 1000;
+            }}
+            .starting-positions {{
+                background-color: white;
+                padding: 15px;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                margin: 20px 0;
+            }}
+            .starting-positions h2 {{
+                margin-top: 0;
+                color: #1a237e;
+            }}
+            .position-table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }}
+            .position-table th, .position-table td {{
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }}
+            .position-table th {{
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }}
+            .position-table tr:hover {{
+                background-color: #f5f5f5;
             }}
             .team-header {{
                 display: flex;
@@ -421,27 +526,6 @@ def create_team_page(team_data, team_number, team_name, rankings):
             .statbotics-link:hover {{
                 background-color: #218838;
             }}
-            .stats-grid {{
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin: 20px 0;
-            }}
-            .stat-card {{
-                background-color: #f8f9fa;
-                padding: 15px;
-                border-radius: 6px;
-                text-align: center;
-            }}
-            .stat-value {{
-                font-size: 24px;
-                font-weight: bold;
-                color: #2c3e50;
-            }}
-            .stat-label {{
-                color: #7f8c8d;
-                margin-top: 5px;
-            }}
             .comments {{
                 margin-top: 20px;
                 padding: 15px;
@@ -453,52 +537,6 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 padding: 10px;
                 border-left: 4px solid #3498db;
                 background-color: white;
-            }}
-            .graph-container {{
-                margin: 20px 0;
-                padding: 15px;
-                background-color: white;
-                border-radius: 6px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                overflow-x: auto;
-            }}
-            .schedule-table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-                font-size: 14px;
-                background-color: white;
-                overflow-x: auto;
-                display: block;
-            }}
-            .schedule-table th {{
-                background-color: #f8f9fa;
-                padding: 12px;
-                text-align: left;
-                border-bottom: 2px solid #dee2e6;
-                position: sticky;
-                top: 0;
-                z-index: 1;
-                white-space: nowrap;
-            }}
-            .schedule-table td {{
-                padding: 8px 12px;
-                border-bottom: 1px solid #dee2e6;
-                white-space: nowrap;
-            }}
-            .schedule-table tr:nth-child(even) {{
-                background-color: #f8f9fa;
-            }}
-            .schedule-table tr:hover {{
-                background-color: #f1f1f1;
-            }}
-            .schedule-table .win {{
-                color: #27ae60;
-                font-weight: bold;
-            }}
-            .schedule-table .loss {{
-                color: #e74c3c;
-                font-weight: bold;
             }}
             .raw-data-table {{
                 width: 100%;
@@ -552,14 +590,6 @@ def create_team_page(team_data, team_number, team_name, rankings):
             }}
             .toggle-button:hover {{
                 background-color: #5a6268;
-            }}
-            .schedule-container {{
-                margin-top: 40px;
-                padding: 20px;
-                background-color: white;
-                border-radius: 6px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                overflow-x: auto;
             }}
             .bracket-container {{
                 margin-top: 40px;
@@ -890,6 +920,30 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 <iframe src="graphs/team_{team_number}_auto.html" style="width: 100%; height: 400px; border: none;"></iframe>
             </div>
 
+            <div class="starting-positions">
+                <h2>Starting Positions</h2>
+                <table class="position-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {''.join([
+                            f'''
+                            <tr>
+                                <td>Position {i}</td>
+                                <td>{team_data[f'startPoses{i}'].astype(bool).sum()}</td>
+                                <td>{(team_data[f'startPoses{i}'].astype(bool).sum()/total_matches*100):.1f}%</td>
+                            </tr>
+                            ''' for i in range(6)
+                        ])}
+                    </tbody>
+                </table>
+            </div>
+
             <div class="schedule-container">
                 <h2>Event Schedule</h2>
                 {schedule_html}
@@ -897,7 +951,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
 
             <div class="comments">
                 <h2>Match Comments</h2>
-                {''.join([f'<div class="comment"><strong>Match {row["matchNumber"]}:</strong> {comment}</div>' for _, row in team_data.iterrows() if pd.notna(row['comment'])])}
+                {''.join([f'<div class="comment"><strong>Match {row["matchNumber"]}:</strong> {row["comment"]}</div>' for _, row in team_data.iterrows() if pd.notna(row['comment'])])}
             </div>
 
             <button id="toggleButton" class="toggle-button" onclick="toggleRawData()">Show Raw Data</button>
@@ -1656,10 +1710,20 @@ def main():
     # Get event rankings
     rankings = get_event_rankings(CURRENT_EVENT_CODE, TBA_API_KEY)
     
-    # Create pages for each team
-    for team in teams:
+    # Create a thread pool for parallel processing
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    
+    # Create a lock for thread-safe file operations
+    file_lock = threading.Lock()
+    
+    def create_team_page_threaded(team):
         team_data = df[df['selectTeam'] == team]
         create_team_page(team_data, team, team_names.get(team, f'Team {team}'), rankings)
+    
+    # Use ThreadPoolExecutor to create pages in parallel
+    with ThreadPoolExecutor(max_workers=min(32, len(teams))) as executor:
+        executor.map(create_team_page_threaded, teams)
     
     # Create index page
     create_index_page(teams, team_names)
