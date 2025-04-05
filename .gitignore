@@ -33,6 +33,7 @@ ENV/
 
 # Project specific
 *.csv
+*.xlsx
 
 # OS
 .DS_Store

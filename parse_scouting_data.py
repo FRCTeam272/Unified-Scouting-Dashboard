@@ -222,18 +222,18 @@ def create_team_page(team_data, team_number, team_name, rankings):
     # Calculate endgame points - only count the highest scoring action per match
     endgame_points = team_data.apply(lambda row: 
         max([
-            12 if row['deepClimbAttempted'] and not row['climbFailed'] else 0,  # Deep climb is worth 12 points
-            6 if row['shallowClimbAttempted'] and not row['climbFailed'] else 0,  # Shallow climb is worth 6 points
+            12 if row['deepClimbAttempted'] else 0,  # Deep climb is worth 12 points
+            6 if row['shallowClimbAttempted'] else 0,  # Shallow climb is worth 6 points
             2 if row['parkAttempted'] else 0  # Park is worth 2 points
         ]), 
         axis=1
     ).mean()
     
-    climb_success_rate = (team_data['deepClimbAttempted'].astype(bool).sum() + team_data['shallowClimbAttempted'].astype(bool).sum()) / total_matches
-    park_rate = team_data['parkAttempted'].astype(bool).sum() / total_matches
+    climb_success_rate = (team_data['deepClimbAttempted'].astype(int).sum() + team_data['shallowClimbAttempted'].astype(int).sum()) / total_matches
+    park_rate = team_data['parkAttempted'].astype(int).sum() / total_matches
     
     # Calculate broke down percentage
-    broke_down_percentage = team_data['brokeDown'].astype(bool).sum() / total_matches * 100
+    broke_down_percentage = team_data['brokeDown'].astype(int).sum() / total_matches * 100
     
     # Calculate autonomous statistics
     auto_coral_l1 = team_data['autoCoralPlaceL1Count'].mean()
@@ -345,7 +345,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
     save_graph(auto_fig, f'team_{team_number}_auto.html')
     
     # remove the scouter scouterInitials column
-    team_data = team_data.drop(columns=['scouterInitials'])
+    # team_data = team_data.drop(columns=['scouterInitials'])
     # Create raw data table
     raw_data_table = team_data.to_html(
         index=False,
@@ -927,30 +927,6 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 <iframe src="graphs/team_{team_number}_auto.html" style="width: 100%; height: 400px; border: none;"></iframe>
             </div>
 
-            <div class="starting-positions">
-                <h2>Starting Positions</h2>
-                <table class="position-table">
-                    <thead>
-                        <tr>
-                            <th>Position</th>
-                            <th>Count</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {''.join([
-                            f'''
-                            <tr>
-                                <td>Position {i}</td>
-                                <td>{team_data[f'startPoses{i}'].astype(bool).sum()}</td>
-                                <td>{(team_data[f'startPoses{i}'].astype(bool).sum()/total_matches*100):.1f}%</td>
-                            </tr>
-                            ''' for i in range(6)
-                        ])}
-                    </tbody>
-                </table>
-            </div>
-
             <div class="schedule-container">
                 <h2>Event Schedule</h2>
                 {schedule_html}
@@ -1042,8 +1018,8 @@ def create_index_page(teams, team_names):
         # Calculate endgame points - only count the highest scoring action per match
         endgame_points = team_data.apply(lambda row: 
             max([
-                12 if row['deepClimbAttempted'] and not row['climbFailed'] else 0,  # Deep climb is worth 12 points
-                6 if row['shallowClimbAttempted'] and not row['climbFailed'] else 0,  # Shallow climb is worth 6 points
+                12 if row['deepClimbAttempted'] else 0,  # Deep climb is worth 12 points
+                6 if row['shallowClimbAttempted'] else 0,  # Shallow climb is worth 6 points
                 2 if row['parkAttempted'] else 0  # Park is worth 2 points
             ]), 
             axis=1
@@ -1660,10 +1636,6 @@ def main():
     boolean_columns = ['deepClimbAttempted', 'shallowClimbAttempted', 'parkAttempted', 'climbFailed', 'playedDefense', 'brokeDown']
     df = pd.read_csv('VScouterData.csv', dtype={col: str for col in boolean_columns})
     
-    # Convert boolean columns to actual boolean values
-    for col in boolean_columns:
-        df[col] = df[col].str.lower() == 'true'
-    
     # Get unique teams
     teams = df['selectTeam'].unique()
     
@@ -1680,22 +1652,128 @@ def main():
     # Create a lock for thread-safe file operations
     file_lock = threading.Lock()
     
-    def create_team_page_threaded(team):
+    for team in teams:
         team_data = df[df['selectTeam'] == team]
         create_team_page(team_data, team, team_names.get(team, f'Team {team}'), rankings)
-    
-    # Use ThreadPoolExecutor to create pages in parallel
-    with ThreadPoolExecutor(max_workers=min(32, len(teams))) as executor:
-        executor.map(create_team_page_threaded, teams)
-    
+
     # Create index page
     create_index_page(teams, team_names)
     
     print(f"Generated pages for {len(teams)} teams in the 'team_pages' directory.")
     print("Open 'team_pages/index.html' to view the results.")
     
+def prepare_data(file_name: str):
+    """Prepare data by reading the Excel file and extracting the raw data sheet"""
+    try:
+        # Read the Excel file without headers first
+        df = pd.read_excel(file_name, sheet_name='Raw Input', header=None)
+        
+        # Get the first two rows
+        prefixes = df.iloc[0]  # First row containing prefixes
+        column_names = df.iloc[1]  # Second row containing base names
+        data_types = df.iloc[1]  # Second row also contains data types
+        
+        # Combine the prefix and column names, handling NaN values
+        new_columns = []
+        last_prefix = None  # Keep track of the last non-NaN prefix
+        
+        for prefix, col_name in zip(prefixes, column_names):
+            # Update last_prefix if current prefix is not NaN
+            if not pd.isna(prefix):
+                last_prefix = prefix
+            
+            # If we have a prefix (either current or last), use it
+            if last_prefix is not None and not str(last_prefix).isdigit():
+                new_columns.append(f"{last_prefix}{col_name}")
+            else:
+                # If no prefix has been set yet, just use the column name
+                new_columns.append(str(col_name))
+        
+        # Set the new column names and remove the first two rows
+        df = df.iloc[2:]  # Get all data except first two rows
+        df.columns = new_columns
+        
+        # Remove the first row which contains the match number
+        df = df.iloc[1:]
+        
+        # Check if 'Scout Name' column exists before trying to drop it
+        if 'Additional InfoScout Name' in df.columns:
+            df = df.drop('Additional InfoScout Name', axis=1)
+        if 'Additional Infonan' in df.columns:
+            df = df.drop('Additional Infonan', axis=1)
+            
+        # Convert boolean columns based on second row data types
+        boolean_columns = []
+        for col, dtype in zip(new_columns, data_types):
+            if str(dtype).lower() == 'boolean':
+                boolean_columns.append(col)
+        
+        # Convert boolean columns to actual boolean values
+        for col in boolean_columns:
+            if col in df.columns:  # Make sure the column exists
+                df[col] = df[col].astype(int).astype(bool)
+        
+        # Reset the index since we removed rows
+        df = df.reset_index(drop=True)
+        
+        # Save to CSV for later processing
+        df.to_csv('VScouterData.csv', index=False)
+        print(f"Successfully converted {file_name} to CSV")
+        return df
+        
+    except Exception as e:
+        print(f"Error preparing data: {e}")
+        raise
+
+def map_data(df: pd.DataFrame):
+    # Maps the data from 1712 to 7414
+    
+    # 1712
+    '''
+    Index(['Team #', 'Match #', 'AutoLeave', 'AutoCoral L1', 'AutoCoral L2',
+       'AutoCoral L3', 'AutoCoral L4', 'AutoBarge', 'AutoProcessor',
+       'AutoDe-reef', 'DefensePlay Defense', 'DefenseWas Defended',
+       'TeleopCoral L1', 'TeleopCoral L2', 'TeleopCoral L3', 'TeleopCoral L4',
+       'TeleopBarge', 'TeleopProcessor', 'TeleopDe-reef', 'EndgameShallow',
+       'EndgamePark', 'EndgameDeep', 'Additional InfoPenalty',
+       'Additional InfoDead Bot', 'Additional InfoAlliance',
+       'Additional InfoAdditional Notes'],
+      dtype='object')
+    '''
+    # Rename column from 1712 format to 7414 format
+    renames = {
+        'Team #': 'selectTeam',
+        'Match #': 'matchNumber',
+        'AutoLeave': 'autoLeave',
+        'AutoCoral L1': 'autoCoralPlaceL1Count',
+        'AutoCoral L2': 'autoCoralPlaceL2Count',
+        'AutoCoral L3': 'autoCoralPlaceL3Count',
+        'AutoCoral L4': 'autoCoralPlaceL4Count',
+        'AutoBarge': 'autoAlgaePlaceNetShot',
+        'AutoProcessor': 'autoAlgaePlaceProcessor',
+        'DefensePlay Defense': 'playedDefense',
+        'TeleopCoral L1': 'teleopCoralPlaceL1Count',
+        'TeleopCoral L2': 'teleopCoralPlaceL2Count',
+        'TeleopCoral L3': 'teleopCoralPlaceL3Count',
+        'TeleopCoral L4': 'teleopCoralPlaceL4Count',
+        'TeleopBarge': 'teleopAlgaePlaceNetShot',
+        'TeleopProcessor': 'teleopAlgaePlaceProcessor',
+        'TeleopDe-reef': 'teleopAlgaePlaceDropMiss',
+        'EndgameShallow': 'shallowClimbAttempted',
+        'EndgamePark': 'parkAttempted',
+        'EndgameDeep': 'deepClimbAttempted',
+        'Additional InfoDead Bot': 'brokeDown',
+        'Additional InfoAdditional Notes': 'comment',
+    }
+    df = df.rename(columns=renames)
+    df.to_csv('VScouterData.csv', index=False)
+    pass
 
 if __name__ == "__main__":
+    df = prepare_data("2025DCMP.xlsb.xlsx")
+    map_data(df)
+
+    
     main()
     # Calculate and print total repo size
     total_size = 0
