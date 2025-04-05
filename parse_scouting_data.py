@@ -5,7 +5,7 @@ TBA_API_KEY = "07tRTM0dcdQIzRCO5AnyGnKQRrzeJxwOMlsKx8HTpBlNABoQYSsI4U9HjregeNWL"
 # District key for your region (e.g., '2024ne' for New England)
 DISTRICT_KEY = "2025fma"  # Replace with your district key
 CURRENT_EVENT_CODE = "2025mrcmp"
-CURRENT_EVENT_NAME = "Lehigh"  # Display name for the event
+CURRENT_EVENT_NAME = "1712 Lehigh"  # Display name for the event
 
 
 try :
@@ -885,6 +885,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
             <div class="team-header">
                 <h1>Team {team_number}</h1>
                 <div class="team-name">{team_name}</div>
+                <div class="team-name">1712 data source</div>
                 <div class="team-rank">{rank_text}</div>
                 <a href="https://www.thebluealliance.com/team/{team_number}" target="_blank" class="tba-link">View on Blue Alliance</a>
                 <a href="https://statbotics.io/team/{team_number}/2025" target="_blank" class="statbotics-link">View on Statbotics</a>
@@ -944,7 +945,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
             </div>
         </div>
         <div class="footer">
-            Data collected and organized by FRC7414<br>
+            Data collected and organized by FRC1712<br>
             Visualization and site created and maintained by FRC272<br>
             Data further enriched by <a href="https://www.thebluealliance.com" target="_blank">The Blue Alliance</a> and <a href="https://statbotics.io" target="_blank">Statbotics</a><br><br>
             Contact: <a href="mailto:jake.gads@gmail.com">jake.gads@gmail.com</a>
