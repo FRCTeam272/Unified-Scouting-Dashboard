@@ -5,7 +5,7 @@ TBA_API_KEY = "07tRTM0dcdQIzRCO5AnyGnKQRrzeJxwOMlsKx8HTpBlNABoQYSsI4U9HjregeNWL"
 # District key for your region (e.g., '2024ne' for New England)
 DISTRICT_KEY = "2025fma"  # Replace with your district key
 CURRENT_EVENT_CODE = "2025mrcmp"
-CURRENT_EVENT_NAME = "1712 Lehigh"  # Display name for the event
+CURRENT_EVENT_NAME = "Unfied Lehigh"  # Display name for the event
 
 
 try :
@@ -219,21 +219,17 @@ def create_team_page(team_data, team_number, team_name, rankings):
     avg_coral_l4 = team_data['teleopCoralPlaceL4Count'].mean()
     avg_algae_net = team_data['teleopAlgaePlaceNetShot'].mean()
     avg_algae_processor = team_data['teleopAlgaePlaceProcessor'].mean()
-    # Calculate endgame points - only count the highest scoring action per match
-    endgame_points = team_data.apply(lambda row: 
-        max([
-            12 if row['deepClimbAttempted'] else 0,  # Deep climb is worth 12 points
-            6 if row['shallowClimbAttempted'] else 0,  # Shallow climb is worth 6 points
-            2 if row['parkAttempted'] else 0  # Park is worth 2 points
-        ]), 
-        axis=1
-    ).mean()
     
-    climb_success_rate = (team_data['deepClimbAttempted'].astype(int).sum() + team_data['shallowClimbAttempted'].astype(int).sum()) / total_matches
-    park_rate = team_data['parkAttempted'].astype(int).sum() / total_matches
+    # Convert string 'true' to boolean and then to integer
+    deep_climb_attempted = team_data['deepClimbAttempted'].apply(lambda x: 1 if x == 'true' else 0)
+    shallow_climb_attempted = team_data['shallowClimbAttempted'].apply(lambda x: 1 if x == 'true' else 0)
+    park_attempted = team_data['parkAttempted'].apply(lambda x: 1 if x == 'true' else 0)
+    
+    climb_success_rate = (deep_climb_attempted.sum() + shallow_climb_attempted.sum()) / total_matches
+    park_rate = park_attempted.sum() / total_matches
     
     # Calculate broke down percentage
-    broke_down_percentage = team_data['brokeDown'].astype(int).sum() / total_matches * 100
+    broke_down_percentage = team_data['brokeDown'].apply(lambda x: 1 if x == 'true' else 0).sum() / total_matches * 100
     
     # Calculate autonomous statistics
     auto_coral_l1 = team_data['autoCoralPlaceL1Count'].mean()
@@ -885,7 +881,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
             <div class="team-header">
                 <h1>Team {team_number}</h1>
                 <div class="team-name">{team_name}</div>
-                <div class="team-name">1712 data source</div>
+                <div class="team-name">Unified data source</div>
                 <div class="team-rank">{rank_text}</div>
                 <a href="https://www.thebluealliance.com/team/{team_number}" target="_blank" class="tba-link">View on Blue Alliance</a>
                 <a href="https://statbotics.io/team/{team_number}/2025" target="_blank" class="statbotics-link">View on Statbotics</a>
@@ -899,10 +895,6 @@ def create_team_page(team_data, team_number, team_name, rankings):
                 <div class="stat-card">
                     <div class="stat-value">{total_matches}</div>
                     <div class="stat-label">Total Matches</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{endgame_points:.1f}</div>
-                    <div class="stat-label">Avg Endgame Points</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">{climb_success_rate:.1%}</div>
@@ -945,7 +937,7 @@ def create_team_page(team_data, team_number, team_name, rankings):
             </div>
         </div>
         <div class="footer">
-            Data collected and organized by FRC1712<br>
+            Data collected and organized by FRC1712 and FRC7414<br>
             Visualization and site created and maintained by FRC272<br>
             Data further enriched by <a href="https://www.thebluealliance.com" target="_blank">The Blue Alliance</a> and <a href="https://statbotics.io" target="_blank">Statbotics</a><br><br>
             Contact: <a href="mailto:jake.gads@gmail.com">jake.gads@gmail.com</a>
@@ -1016,15 +1008,6 @@ def create_index_page(teams, team_names):
     team_scores = {}
     for team in teams:
         team_data = df[df['selectTeam'] == team]
-        # Calculate endgame points - only count the highest scoring action per match
-        endgame_points = team_data.apply(lambda row: 
-            max([
-                12 if row['deepClimbAttempted'] else 0,  # Deep climb is worth 12 points
-                6 if row['shallowClimbAttempted'] else 0,  # Shallow climb is worth 6 points
-                2 if row['parkAttempted'] else 0  # Park is worth 2 points
-            ]), 
-            axis=1
-        ).mean()
         team_scores[team] = {
             'coral': (team_data['autoCoralPlaceL1Count'].mean() * 3+ 
                     team_data['autoCoralPlaceL2Count'].mean() * 4 +
@@ -1038,8 +1021,7 @@ def create_index_page(teams, team_names):
                     team_data['autoAlgaePlaceProcessor'].mean() * 2) +  # Double auto algae
                     team_data['teleopAlgaePlaceNetShot'].mean() * 4 +
                     team_data['teleopAlgaePlaceProcessor'].mean() * 2,
-            'endgame': endgame_points,
-            'broke_down': team_data['brokeDown'].astype(bool).sum() / len(team_data) * 100
+            'broke_down': 0
         }
     
     html_content = f"""
@@ -1509,7 +1491,6 @@ def create_index_page(teams, team_names):
                     <button class="sort-button" onclick="sortTeams('rank')">Sort by Rank</button>
                     <button class="sort-button" onclick="sortTeams('coral')">Sort by Coral</button>
                     <button class="sort-button" onclick="sortTeams('algae')">Sort by Algae</button>
-                    <button class="sort-button" onclick="sortTeams('endgame')">Sort by Endgame</button>
                     <button class="sort-button" onclick="sortTeams('broke_down')">Sort by Breakdown Rate</button>
                     <button class="info-button" onclick="showInfo()">Info</button>
                 </div>
@@ -1521,7 +1502,7 @@ def create_index_page(teams, team_names):
         team_name = team_names.get(team, f'Team {team}')
         scores = team_scores[team]
         html_content += f"""
-                <a href="team_{team}.html" class="team-card" target="_blank" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-endgame="{scores['endgame']:.1f}" data-broke-down="{scores['broke_down']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
+                <a href="team_{team}.html" class="team-card" target="_blank" data-coral="{scores['coral']:.1f}" data-algae="{scores['algae']:.1f}" data-broke-down="{scores['broke_down']:.1f}" data-rank="{rankings.get(team, {}).get('rank', 999999)}">
                     <div class="team-number">Team {team}</div>
                     <div class="team-name">{team_name}</div>
                     <div class="team-rank">Rank: {rankings.get(team, {}).get('rank', 'N/A')}</div>
@@ -1533,10 +1514,6 @@ def create_index_page(teams, team_names):
                         <div class="team-stat">
                             <div class="team-stat-label">Coral</div>
                             <div class="team-stat-value">{scores['coral']:.1f}</div>
-                        </div>
-                        <div class="team-stat">
-                            <div class="team-stat-label">Endgame</div>
-                            <div class="team-stat-value">{scores['endgame']:.1f}</div>
                         </div>
                         <div class="team-stat">
                             <div class="team-stat-label">Broke Down</div>
@@ -1604,15 +1581,6 @@ def create_index_page(teams, team_names):
                         </ul>
                     </ul>
                     <p>Formula: (Auto Net Shot×4 + Auto Processor×2) + (Teleop Net Shot×4 + Teleop Processor×2)</p>
-
-                    <h3>Endgame Scoring</h3>
-                    <p>The endgame score is calculated from the final actions of the match:</p>
-                    <ul>
-                        <li>Park: 2 points</li>
-                        <li>Shallow Climb: 6 points</li>
-                        <li>Deep Climb: 12 points (shallow climbs are not denoted)</li>
-                    </ul>
-                    <p>Note: A team can only score one endgame action per match.</p>
                     
                     <p><em>Note: All scores shown are averages per match.</em></p>
                 </div>
@@ -1632,10 +1600,20 @@ def create_index_page(teams, team_names):
     with open('team_pages/index.html', 'w', encoding='utf-8') as f:
         f.write(html_content)
 
-def main():
+def main(combined_data: List[str] = []):
     # Read the CSV file with boolean columns properly handled
     boolean_columns = ['deepClimbAttempted', 'shallowClimbAttempted', 'parkAttempted', 'climbFailed', 'playedDefense', 'brokeDown']
-    df = pd.read_csv('VScouterData.csv', dtype={col: str for col in boolean_columns})
+    if len(combined_data) == 0:
+        df = pd.read_csv('VScouterData.csv', dtype={col: str for col in boolean_columns})
+    else:
+        df = pd.DataFrame()
+        for file in combined_data:
+            if df.empty:
+                df = pd.read_csv(file, dtype={col: str for col in boolean_columns})
+            else:
+                next_df = pd.read_csv(file, dtype={col: str for col in boolean_columns})
+                df = pd.concat([df, next_df], ignore_index=True)
+    df.to_csv('VScouterDataUnified.csv', index=False)
     
     # Get unique teams
     teams = df['selectTeam'].unique()
@@ -1718,7 +1696,7 @@ def prepare_data(file_name: str):
         df = df.reset_index(drop=True)
         
         # Save to CSV for later processing
-        df.to_csv('VScouterData.csv', index=False)
+        df.to_csv('VScouterData1.csv', index=False)
         print(f"Successfully converted {file_name} to CSV")
         return df
         
@@ -1767,7 +1745,7 @@ def map_data(df: pd.DataFrame):
         'Additional InfoAdditional Notes': 'comment',
     }
     df = df.rename(columns=renames)
-    df.to_csv('VScouterData.csv', index=False)
+    df.to_csv('VScouterData1.csv', index=False)
     pass
 
 if __name__ == "__main__":
@@ -1775,7 +1753,7 @@ if __name__ == "__main__":
     map_data(df)
 
     
-    main()
+    main(["VSCouterData1.csv", "VSCouterData.csv"])
     # Calculate and print total repo size
     total_size = 0
     for dirpath, dirnames, filenames in os.walk('.'):
